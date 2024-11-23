@@ -68,12 +68,20 @@ spec:
                     enabled: true
                     annotations:
                       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+                      cert-manager.io/cluster-issuer: lets-encrypt-http-issuer
                       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
                     ingressClassName: "nginx"
                     hostname: argocd-{{ .Values.loft.virtualClusterName }}.{{ .Values.loft.clusterAnnotations.domain }}
                     tls: true
                   ingressGrpc:
                     enabled: false
+                  certificate:
+                    enabled: true
+                    domain: argocd-{{ .Values.loft.virtualClusterName }}.{{ .Values.loft.clusterAnnotations.domain }}
+                    issuer:
+                      group: "cert-manager.io"
+                      kind: "ClusterIssuer"
+                      name: "lets-encrypt-http-issuer"
                 ## ApplicationSet controller
                 applicationSet:
                   enabled: true
@@ -85,6 +93,13 @@ spec:
                       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
                     hostname: argocd-appset-{{ .Values.loft.virtualClusterName }}.{{ .Values.loft.clusterAnnotations.domain }}
                     tls: true
+                  certificate:
+                    enabled: true
+                    domain: argocd-appset-{{ .Values.loft.virtualClusterName }}.{{ .Values.loft.clusterAnnotations.domain }}
+                    issuer:
+                      group: "cert-manager.io"
+                      kind: "ClusterIssuer"
+                      name: "lets-encrypt-http-issuer"
                 notifications:
                   argocdUrl: https://argocd-{{ .Values.loft.virtualClusterName }}.{{ .Values.loft.clusterAnnotations.domain }}
                   cm:
@@ -177,6 +192,10 @@ spec:
                       tag: "{{ .Values.k8sVersion }}"
               coredns:
                 embedded: true
+              statefulSet:
+                persistence:
+                  volumeClaim:
+                    storageClass: "gp2"
         accessPoint:
           ingress: {}
         spaceTemplate:
